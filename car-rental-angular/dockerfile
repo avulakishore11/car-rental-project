@@ -1,0 +1,28 @@
+# Stage 1: Build Angular App
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --frozen-lockfile
+
+# Copy source and build
+COPY . .
+RUN npm run build --prod
+
+# Stage 2: Serve with NGINX
+FROM nginx:stable-alpine
+
+# Remove default NGINX page
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built Angular app to NGINX
+COPY --from=builder /app/dist/car-rental-angular /usr/share/nginx/html
+
+# Copy custom nginx config (optional)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port and run
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
