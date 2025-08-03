@@ -1,85 +1,67 @@
-
-# Namespace (optional - uncomment if needed)
+---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: springbootapi-ns
-
----
-# Optional: ACR Auth Secret — skip this if you're using managed identity with AKS
-# If using 'kubectl create secret docker-registry acr-auth-secret', keep it
-# Otherwise, you can remove this block entirely and imagePullSecrets below
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: acr-auth-secret
-#   namespace: springbootapi-ns
-# type: kubernetes.io/dockerconfigjson
-# data:
-#   .dockerconfigjson: <your-base64-encoded-dockerconfigjson>
-
----
-#apiVersion: v1
-#kind: Secret
-#metadata:
- # name: db-secret
- # namespace: springbootapi-ns
-#type: Opaque
-#stringData:
- # username: kishore@servr-1
- # password: 16nf1a0101@.
-
+  name: car-rental-ns
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springbootapi-deployment
-  namespace: springbootapi-ns
+  name: angular-frontend-deployment
+  namespace: car-rental-ns
   labels:
-    app: springbootapi
+    app: angular-frontend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: springbootapi
+      app: angular-frontend
   template:
     metadata:
       labels:
-        app: springbootapi
+        app: angular-frontend
     spec:
       containers:
-        - name: springbootapi-container
-          image: carrentalsacr.azurecr.io/angular-image:V1.0  # ⬅️ Reference from pipeline
+        - name: angular-container
+          image: repo12.azurecr.io/angular-image:v1.0
           ports:
-            - containerPort: 8080
-          #env:
-           # - name: SPRING_DATASOURCE_URL
-            #  value: jdbc:mysql://servr-1.mysql.database.azure.com:3306/user-db?useSSL=true&requireSSL=true&verifyServerCertificate=false
-            #- name: SPRING_DATASOURCE_USERNAME
-             ##  secretKeyRef:
-               #   name: db-secret
-                #  key: username
-            ## valueFrom:
-              #  secretKeyRef:
-               #   name: db-secret
-                #  key: password
-      #imagePullSecrets:
-       # - name: acr-auth-secret  # Optional: skip if using managed identity
-      # Optional nodeSelector:
-      # nodeSelector:
-      #   agentpool: usernp
+            - containerPort: 80
+      # Uncomment if not using managed identity
+      # imagePullSecrets:
+      #   - name: acr-auth-secret
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: springbootapi-service
-  namespace: springbootapi-ns
+  name: angular-frontend-service
+  namespace: car-rental-ns
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: springbootapi
+    app: angular-frontend
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
+      targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: angular-frontend-ingress
+  namespace: car-rental-ns
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  rules:
+    - host: gscncmhgeah9ccbz.fz26.alb.azure.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: angular-frontend-service
+                port:
+                  number: 80
