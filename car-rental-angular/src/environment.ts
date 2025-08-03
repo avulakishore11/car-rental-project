@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: '/api'
+  apiBaseUrl: 'https://gscncmhgeah9ccbz.fz26.alb.azure.com/api'
 };
