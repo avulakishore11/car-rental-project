@@ -11,10 +11,10 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   register(signupRequest: any): Observable<any> {
-    return this.http.post(`${BASE_URL}/api/auth/signup`, signupRequest)
+    return this.http.post(`${BASE_URL}/auth/signup`, signupRequest)
   }
 
   login(loginRequest: any): Observable<any> {
-    return this.http.post(`${BASE_URL}/api/auth/login`, loginRequest)
+    return this.http.post(`${BASE_URL}/auth/login`, loginRequest)
   }
 }
