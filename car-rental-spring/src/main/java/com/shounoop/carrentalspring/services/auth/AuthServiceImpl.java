@@ -17,7 +17,7 @@ public class AuthServiceImpl implements AuthService {
 
     @PostConstruct
     public void createAdminAccount() {
-         final String adminEmail = "admin@test.com";
+         if (!seedAdmin) return;
          if (userRepository.findFirstByEmail("admin@test.com").isEmpty()) {
       //  User adminAccount = userRepository.findByUserRole(UserRole.ADMIN);
 
