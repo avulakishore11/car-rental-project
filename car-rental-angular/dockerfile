@@ -1,0 +1,19 @@
+# Stage 1 – build the Angular app
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY car-rental-angular/package*.json ./
+RUN npm install
+COPY car-rental-angular/ .
+# build in production mode; adjust target if needed
+RUN npm run build -- --configuration=production
+
+# Stage 2 – copy compiled files and serve with NGINX
+FROM nginx:alpine
+# copy custom nginx config (see above)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# copy built Angular files into NGINX’s html directory; adjust path if angular.json changes
+COPY --from=build /app/dist/car-rental-angular/ /usr/share/nginx/html/
+# expose HTTP port
+EXPOSE 80
+# start NGINX in the foreground
+CMD ["nginx", "-g", "daemon off;"]
