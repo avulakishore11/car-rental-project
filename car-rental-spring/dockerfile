@@ -1,0 +1,31 @@
+# ---------- Stage 1: Build the application ----------
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+# Set working directory in container
+WORKDIR /app
+
+# Copy pom.xml and download dependencies (cache-friendly)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy full source code and build the JAR
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ---------- Stage 2: Run the application ----------
+FROM openjdk:17-jdk-slim
+
+# Set working directory for runtime container
+WORKDIR /app
+
+# Copy the JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port Spring Boot listens on
+EXPOSE 8080
+
+# Optional: runtime JVM options
+ENV JAVA_OPTS=""
+
+# Start the Spring Boot application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
