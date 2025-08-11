@@ -9,11 +9,16 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
+
+    @Value("${app.auth.seed-admin:false}")
+    private boolean seedAdmin;
 
     @PostConstruct
     public void createAdminAccount() {
